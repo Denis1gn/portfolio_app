@@ -34,6 +34,16 @@ def main():
         st.info("Выберите хотя бы один тикер")
         return
 
+    # 🔁 Сброс состояния при изменении тикеров
+    if 'tickers' in st.session_state and st.session_state.tickers != tickers:
+        keys_to_clear = [
+            'dfs', 'port_df', 'opt_port_df', 'metrics', 'opt_metrics',
+            'weights', 'opt_weights', 'history'
+        ]
+        for k in keys_to_clear:
+            st.session_state.pop(k, None)
+
+    # ⚖️ Инициализация весов
     if 'weights' not in st.session_state or len(st.session_state.weights) != len(tickers):
         st.session_state.weights = [1.0 / len(tickers)] * len(tickers)
 
@@ -63,7 +73,6 @@ def main():
         display_asset_statistics(st.session_state.port_df, st.session_state.tickers, st.session_state.rf)
         plot_correlation_heatmap(st.session_state.port_df)
 
-        # Расчет и отображение VaR 
         var_data, var_results, ma_window = perform_var_analysis(st.session_state.port_df)
         plot_var_analysis(var_data, ma_window)
         display_var_results(var_data, var_results, ma_window)
@@ -73,15 +82,22 @@ def main():
             cov_matrix = st.session_state.port_df[[f"{t}_Daily_Return" for t in st.session_state.tickers]].cov()
             init_guess = copy.deepcopy(st.session_state.weights)
 
-            opt_weights, min_vol, history = optimize_portfolio_weights(
-                mean_returns.values, cov_matrix.values, init_guess
-            )
+            opt_weights, max_sharpe, history = optimize_portfolio_weights(
+                                           mean_returns.values,
+                          cov_matrix.values,
+                          rf=st.session_state.rf,
+                          init_guess=init_guess
+                            )
 
             st.session_state.opt_weights = opt_weights
             st.session_state.history = history
-            st.session_state.opt_port_df = build_portfolio_df(st.session_state.dfs, st.session_state.tickers, opt_weights)
+            st.session_state.opt_port_df = build_portfolio_df(
+                st.session_state.dfs, st.session_state.tickers, opt_weights
+            )
             st.session_state.opt_metrics = calc_portfolio_metrics(st.session_state.opt_port_df, st.session_state.rf)
-            st.session_state.opt_metrics['cumulative_return'] = (1 + st.session_state.opt_port_df['Portfolio_Return']).prod() - 1
+            st.session_state.opt_metrics['cumulative_return'] = (
+                (1 + st.session_state.opt_port_df['Portfolio_Return']).prod() - 1
+            )
 
     if 'opt_port_df' in st.session_state:
         st.subheader("🎯 Оптимальные веса")
