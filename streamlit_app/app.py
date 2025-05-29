@@ -3,13 +3,15 @@ import datetime as dt
 from ui import (
     get_user_inputs, get_weights_ui, plot_portfolio_return, display_metrics,
     plot_return_distribution, display_asset_statistics, plot_correlation_heatmap,
-    plot_volatility_function
+    plot_volatility_function, plot_var_analysis, display_var_results
 )
 from loaders.moex_loader import get_moex_data_and_prepare
 from loaders.risk_free_rate import get_risk_free_rate
 from portfolio.constructor import build_portfolio_df
 from portfolio.risk_return import calc_portfolio_metrics
 from portfolio.optimizer import optimize_portfolio_weights
+from portfolio.var_analysis import perform_var_analysis
+
 import numpy as np
 import copy
 
@@ -25,7 +27,7 @@ def fetch_data(tickers, start_date, end_date):
 
 def main():
     st.set_page_config(layout="wide", page_title="Анализ портфеля")
-    st.title("Анализ инвестиционного портфеля на MOEX")
+    st.title("📊 Анализ инвестиционного портфеля на MOEX")
 
     tickers, start_date, end_date = get_user_inputs()
     if not tickers:
@@ -61,7 +63,12 @@ def main():
         display_asset_statistics(st.session_state.port_df, st.session_state.tickers, st.session_state.rf)
         plot_correlation_heatmap(st.session_state.port_df)
 
-        if st.button("Оптимизировать портфель для снижения волатильности"):
+        # Расчет и отображение VaR 
+        var_data, var_results, ma_window = perform_var_analysis(st.session_state.port_df)
+        plot_var_analysis(var_data, ma_window)
+        display_var_results(var_data, var_results, ma_window)
+
+        if st.button("🚀 Оптимизировать портфель"):
             mean_returns = st.session_state.port_df[[f"{t}_Daily_Return" for t in st.session_state.tickers]].mean()
             cov_matrix = st.session_state.port_df[[f"{t}_Daily_Return" for t in st.session_state.tickers]].cov()
             init_guess = copy.deepcopy(st.session_state.weights)

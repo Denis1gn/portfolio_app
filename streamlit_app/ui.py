@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import plotly.figure_factory as ff
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def get_user_inputs():
@@ -64,7 +65,6 @@ def plot_portfolio_return(df, key_suffix="fact"):
     )
 
     st.plotly_chart(fig, use_container_width=True, key=f"portfolio_return_{key_suffix}")
-
 
 
 def plot_return_distribution(df, key):
@@ -164,3 +164,53 @@ def plot_volatility_function(history):
     )
 
     st.plotly_chart(fig, use_container_width=True, key="volatility_function")
+
+
+
+
+def display_var_results(stock_data, results, ma_window):
+    st.subheader("📉 Value-at-Risk (VaR) анализ")
+
+    st.write("### 📌 Нарушения и p-значения")
+
+    st.write(f"🔹 Всего наблюдений: {results['Observations']}")
+    st.write(f"🔹 Ожидаемые нарушения (5%): {results['Expected Violations (5%)']:.2f}")
+    
+    st.write("---")
+    st.write("**Delta-Normal VaR:**")
+    st.write(f"• Нарушений: {results['Violations, Delta-Normal VaR']}")
+    st.write(f"• p-значение: {results['p-value, Delta-Normal VaR']:.4f}")
+    
+    st.write("**Historical VaR:**")
+    st.write(f"• Нарушений: {results['Violations, Historical VaR']}")
+    st.write(f"• p-значение: {results['p-value, Historical VaR']:.4f}")
+    
+def plot_var_analysis(port_df, ma_window):
+    st.subheader("📉 Анализ VaR портфеля")
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=port_df.index,
+        y=port_df['Portfolio_Return'],
+        mode='lines',
+        name='Доходность'
+    ))
+    fig.add_trace(go.Scatter(
+        x=port_df.index,
+        y=port_df['Var Historical'],
+        mode='lines',
+        name='Historical VaR'
+    ))
+    fig.add_trace(go.Scatter(
+        x=port_df.index,
+        y=port_df['Delta-Normal VaR'],
+        mode='lines',
+        name='Delta-Normal VaR'
+    ))
+    fig.update_layout(
+        title="Сравнение VaR",
+        xaxis_title="Дата",
+        yaxis_title="Значение",
+        template='plotly_white'
+    )
+    st.plotly_chart(fig, use_container_width=True, key="var_comparison")
