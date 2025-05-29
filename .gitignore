@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.log
+
+# Jupyter
+.ipynb_checkpoints
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Streamlit
+.streamlit/config.toml
+.streamlit/credentials.toml
+.streamlit/cache/
+.streamlit/secrets.toml
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+*.csv
+*.xlsx
+*.parquet
+*.feather
+
+# Test output
+coverage.xml
+htmlcov/
+.cache/
+.pytest_cache/
+.tox/
+nosetests.xml
+test-results/
+
+# Environment
+.env
+.env.*
