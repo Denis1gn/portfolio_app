@@ -106,7 +106,7 @@ portfolio_app/
 
 <img width="1570" alt="image" src="https://github.com/user-attachments/assets/508a11ad-4795-459d-b07e-aaaa61a7e70d" />
 
-5. Для оптимизации риска нажмите Оптимизировать
+5. Для оптимизации доходность / риск, выберите годовое значение волатильности и нажмите Оптимизировать
 
 <img width="1595" alt="image" src="https://github.com/user-attachments/assets/f5e3e59f-9cca-42e8-9f6c-ed191ef0f332" />
 
