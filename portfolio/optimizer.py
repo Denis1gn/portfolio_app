@@ -1,37 +1,41 @@
 import numpy as np
 from scipy.optimize import minimize
 
-def optimize_portfolio_weights(mean_returns_daily, cov_matrix_daily, rf=0.0, init_guess=None):
+def optimize_portfolio_weights(mean_returns_daily, cov_matrix_daily,
+                               target_volatility=0.20, init_guess=None):
     num_assets = len(mean_returns_daily)
 
     # Преобразуем в годовые значения
-    mean_returns_annual = mean_returns_daily * 252
-    cov_matrix_annual = cov_matrix_daily * 252
+    mu = mean_returns_daily * 252
+    sigma = cov_matrix_daily * 252
 
-    def negative_sharpe_ratio(weights):
-        port_return = np.dot(weights, mean_returns_annual)
-        port_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix_annual, weights)))
-        if port_vol == 0:
-            return np.inf
-        return -(port_return - rf) / port_vol
+    # Целевая функция: максимизируем доходность → минимизируем отрицательную
+    def neg_portfolio_return(weights):
+        return -np.dot(weights, mu)
 
-    constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
-    bounds = tuple((0, 1) for _ in range(num_assets))
+    # Ограничение на риск (годовая дисперсия ≤ целевой волатильности в квадрате)
+    def risk_constraint(weights):
+        return target_volatility**2 - np.dot(weights.T, np.dot(sigma, weights))
+
+    constraints = [
+        {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},        # сумма весов = 1
+        {'type': 'ineq', 'fun': risk_constraint}               # риск ≤ целевого
+    ]
+
+    bounds = [(0, 1) for _ in range(num_assets)]  # без коротких продаж
 
     if init_guess is None:
-        init_guess = np.array([1. / num_assets] * num_assets)
+        init_guess = np.array([1.0 / num_assets] * num_assets)
 
-    history = []
-
-    def callback(xk):
-        sharpe = -negative_sharpe_ratio(xk)
-        history.append(sharpe)
-
-    result = minimize(negative_sharpe_ratio, init_guess,
-                      method='SLSQP', bounds=bounds,
-                      constraints=constraints, callback=callback)
+    result = minimize(
+        neg_portfolio_return,
+        init_guess,
+        method='SLSQP',
+        bounds=bounds,
+        constraints=constraints
+    )
 
     if not result.success:
-        raise ValueError("❌ Не удалось провести оптимизацию портфеля")
+        raise ValueError("❌ Оптимизация не удалась, попробуй повысить уровень годовой волатильности")
 
-    return result.x, -result.fun, history
+    return result.x, -result.fun  # веса и ожидаемая доходность (годовая)
