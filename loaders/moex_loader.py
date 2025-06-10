@@ -22,7 +22,7 @@ def get_moex_stock_data(secid, start_date, end_date, engine='stock', market='sha
 
     # Гарантируем, что начало не позже конца
     if start_date > end_date:
-        print(f"⚠️ Начальная дата {start_date} позже конечной {end_date}. Меняем на год назад.")
+        print(f"Начальная дата {start_date} позже конечной {end_date}. Меняем на год назад.")
         start_date = end_date - dt.timedelta(days=365)
 
     all_data = []
@@ -35,7 +35,7 @@ def get_moex_stock_data(secid, start_date, end_date, engine='stock', market='sha
 
         url = f"https://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board}/securities/{secid}.json?from={current_start_date}&till={current_end_date}&iss.meta=off"
 
-        print(f"📡 Запрос {secid}: {current_start_date} → {current_end_date}")
+        print(f"Запрос {secid}: {current_start_date} → {current_end_date}")
         print(f"URL: {url}")
 
         try:
@@ -44,7 +44,7 @@ def get_moex_stock_data(secid, start_date, end_date, engine='stock', market='sha
             j = r.json()
 
             if 'history' not in j or not j['history']['data']:
-                print(f"❗ Нет данных по {secid} за период {current_start_date}–{current_end_date}")
+                print(f"Нет данных по {secid} за период {current_start_date}–{current_end_date}")
             else:
                 flattened_data = flatten(j, 'history')
                 all_data.extend(flattened_data)
@@ -53,7 +53,7 @@ def get_moex_stock_data(secid, start_date, end_date, engine='stock', market='sha
             time.sleep(0.5)
 
         except Exception as e:
-            print(f"❌ Ошибка при запросе данных {secid}: {e}")
+            print(f"Ошибка при запросе данных {secid}: {e}")
             break
 
     return all_data
@@ -62,13 +62,13 @@ def get_moex_data_and_prepare(secid, start_date, end_date):
     data = get_moex_stock_data(secid, start_date, end_date)
 
     if not data:
-        print(f"❌ Нет данных для {secid}")
+        print(f"Нет данных для {secid}")
         return pd.DataFrame()
 
     df = pd.DataFrame(data)
 
     if 'TRADEDATE' not in df.columns or 'CLOSE' not in df.columns:
-        print(f"❌ Отсутствуют обязательные поля в данных {secid}: {df.columns.tolist()}")
+        print(f"Отсутствуют обязательные поля в данных {secid}: {df.columns.tolist()}")
         return pd.DataFrame()
 
     df['TRADEDATE'] = pd.to_datetime(df['TRADEDATE'])
