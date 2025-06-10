@@ -36,6 +36,6 @@ def optimize_portfolio_weights(mean_returns_daily, cov_matrix_daily,
     )
 
     if not result.success:
-        raise ValueError("❌ Оптимизация не удалась, попробуй повысить уровень годовой волатильности")
+        raise ValueError("Оптимизация не удалась, попробуй повысить уровень годовой волатильности")
 
     return result.x, -result.fun  # веса и ожидаемая доходность (годовая)
