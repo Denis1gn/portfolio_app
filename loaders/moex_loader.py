@@ -17,7 +17,7 @@ def get_moex_stock_data(secid, start_date, end_date, engine='stock', market='sha
     # Гарантируем, что конец не в будущем
     today = dt.date.today()
     if end_date > today:
-        print(f"🔁 Конец окна {end_date} > сегодня. Заменяем на {today}")
+        print(f"Конец окна {end_date} > сегодня. Заменяем на {today}")
         end_date = today
 
     # Гарантируем, что начало не позже конца
